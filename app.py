@@ -3,8 +3,9 @@ import pandas as pd
 import random
 import time
 
-# 1. TA CONFIGURATION
-SHEET_URL = "TON_URL_PUBLIEE_ICI" # Remplace bien par ton lien se terminant par output=csv
+# 1. TA CONFIGURATION (URL mise à jour)
+# Remplace la partie entre guillemets si tu changes de document plus tard
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6zSndh461zL_27pI61l9mUfWp0U_V2E_p2Y9_rY4_n1_n1_n1/pub?output=csv" 
 
 st.set_page_config(page_title="IA Advisor Prototype", layout="centered")
 
@@ -14,7 +15,12 @@ st.write("Utilisez notre base de données et demandez un conseil à l'IA pour op
 
 try:
     # Chargement des données
-    df = pd.read_csv(SHEET_URL)
+    # On ajoute un paramètre de mise en cache pour éviter de recharger le CSV à chaque clic
+    @st.cache_data(ttl=300) # Rafraîchit les données toutes les 5 minutes
+    def load_data(url):
+        return pd.read_csv(url)
+
+    df = load_data(SHEET_URL)
 
     # BARRE DE RECHERCHE
     query = st.text_input("Que recherchez-vous aujourd'hui ?", placeholder="Ex: Marketing, Finance, Outils...")
@@ -36,25 +42,27 @@ try:
                 with st.spinner('L\'IA analyse vos données...'):
                     time.sleep(2) # Donne un aspect "réel" au calcul
                     
-                    # Ici on simule un conseil basé sur la première ligne trouvée
+                    # Liste de conseils pour le prototype
                     conseil_aleatoire = [
                         "D'après les tendances, vous devriez vous concentrer sur la colonne 2 ce mois-ci.",
                         "L'analyse prédictive suggère que cet élément est le plus rentable pour votre profil.",
-                        "Optimisez votre recherche en ajoutant un critère de budget pour un meilleur résultat."
+                        "Optimisez votre recherche en ajoutant un critère de budget pour un meilleur résultat.",
+                        "Attention : les données indiquent une saturation sur ce secteur, diversifiez vos sources."
                     ]
                     st.info(f"**Conseil de l'IA :** {random.choice(conseil_aleatoire)}")
                     
-                # NOTE : Ici, en version "Connectée", on enverrait l'info 
-                # "L'utilisateur X a cliqué sur Conseil IA" vers ton Google Sheet.
+                # Message discret pour le testeur
                 st.caption("ℹ️ Feedback enregistré pour améliorer l'algorithme.")
 
         else:
             st.warning("Aucun résultat pour cette recherche.")
 
 except Exception as e:
-    st.error("Lien Google Sheet manquant ou mal configuré.")
-    st.info("Vérifiez que vous avez bien mis l'URL de 'Publier sur le web' au format CSV.")
+    st.error("Erreur de connexion aux données.")
+    st.info("Vérifiez que le Google Sheet est bien 'Publié sur le Web' au format CSV.")
+    # Affiche l'erreur précise pour le debug au besoin
+    # st.write(e)
 
 # --- FOOTER DISCRET ---
 st.markdown("---")
-st.caption("Prototype v1.2 - Testing Mode Active")
+st.caption("Prototype v1.3 - Testing Mode Active")
